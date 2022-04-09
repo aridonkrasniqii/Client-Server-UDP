@@ -12,8 +12,8 @@ const db_users = [
   },
 
   {
-    username: 'edon',
-    password: 'edonedon',
+    username: 'art',
+    password: 'artart',
     permissions: { read: true, write: true, execute: false },
   },
 ];
