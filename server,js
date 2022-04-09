@@ -1,1 +1,44 @@
 
+const fs = require('fs');
+var dgram = require('dgram');
+
+// users details
+
+const db_users = [
+  {
+    username: 'aridon',
+    password: 'aridonaridon',
+    permissions: { read: true, write: true, execute: false },
+  },
+
+  {
+    username: 'edon',
+    password: 'edonedon',
+    permissions: { read: true, write: true, execute: false },
+  },
+];
+
+function findUser(user, password) {
+  for (let i = 0; i < db_users.length; i++) {
+    if (user == db_users[i].username && password == db_users[i].password) {
+      return db_users[i];
+    }
+  }
+  // user does not exits
+  return null;
+}
+
+let PORT = 8882;
+let HOST = '127.0.0.1';
+
+// Create udp server socket object.
+let server = dgram.createSocket('udp4');
+
+// When udp server started and listening.
+server.on('listening', function () {
+  // Get and print udp server listening ip address and port number in log console.
+  let address = server.address();
+  console.log(
+    'UDP Server listening on ' + address.address + ': ' + address.port
+  );
+});
