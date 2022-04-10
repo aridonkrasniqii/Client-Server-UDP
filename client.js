@@ -26,7 +26,7 @@ let HOST = '127.0.0.1' ;
 
 // Buffers in Node.js is used to perform operations on raw binary data
 
-var message = new Buffer(`${cmd}: ` + user.details());
+var message = new Buffer.from(`${cmd}: ` + user.details());
 
 // Create a udp socket client object.
 let client = dgram.createSocket('udp4');
