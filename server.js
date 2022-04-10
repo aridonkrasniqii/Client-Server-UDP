@@ -1,9 +1,8 @@
-
 const fs = require('fs');
+const { exec } = require('child_process');
 var dgram = require('dgram');
 
 // users details
-
 const db_users = [
   {
     username: 'aridon',
@@ -12,8 +11,8 @@ const db_users = [
   },
 
   {
-    username: 'art',
-    password: 'artart',
+    username: 'edon',
+    password: 'edonedon',
     permissions: { read: true, write: true, execute: false },
   },
 ];
@@ -43,7 +42,6 @@ server.on('listening', function () {
   );
 });
 
-
 // When udp server receive message.
 server.on('message', function (message, remote) {
   console.log(' ' + remote.address + ' : ' + remote.port + ' - ');
@@ -63,40 +61,112 @@ server.on('message', function (message, remote) {
 
   switch (request.slice(0, request.length - 1)) {
     case 'read': {
-      if (read != true) {
-        console.log('User is not allowed to read file ');
+      if (read == true) {
+        console.log(`User ${user.username} has permissions to read file `);
+        fs.readFile('text.txt', 'utf8', (error, data) => {
+          if (error) {
+            console.log(error);
+            return;
+          } else {
+            console.log('File content: \n');
+            console.log(data);
+          }
+        });
       } else {
-        // READ FILE: TODO:
-        console.log('User is allowed to read file ');
+        console.log(
+          `User ${user.username}does not have permissions to read file `
+        );
       }
 
       break;
     }
     case 'write': {
-      if (write != true) {
-        console.log('User is not allowd to write file ');
+      if (write == true) {
+        console.log(`User ${user.username} is allowed to write on file `);
+
+        const content = userd;
+        fs.writeFile('text.txt', content, (err) => {
+          if (err) {
+            console.log('Write file exception ' + err);
+          } else {
+            console.log('File written successfully ');
+          }
+        });
       } else {
-        // WRITE FILE: TODO:
-        console.log('User is allowed to write files ');
+        console.log(
+          `User ${user.username}does not have permissions to write on file `
+        );
       }
       break;
     }
     case 'execute': {
-      if (execute != true) {
-        console.log('User is not allowed  to execute files ');
+      if (execute == true) {
+        if (user.permissions.write == false) {
+          console.log(
+            `User ${user.username} has permissions to open file  {readonly}`
+          );
+          exec(
+            'chmod 0444 text.txt && xdg-open text.txt',
+            (error, stdout, stderr) => {
+              if (error) {
+                console.log(`error: ${error.message}`);
+                return;
+              }
+              if (stderr) {
+                console.log(`stderr: ${stderr}`);
+                return;
+              }
+              console.log(`stdout: ${stdout}`);
+            }
+          );
+        } else {
+          console.log(
+            `User ${user.username} has permissions  to open file  {read-write}`
+          );
+          exec(
+            'chmod u=rwx,g=r,o= text.txt && xdg-open text.txt',
+            (error, stdout, stderr) => {
+              if (error) {
+                console.log(`error: ${error.message}`);
+                return;
+              }
+              if (stderr) {
+                console.log(`stderr: ${stderr}`);
+                return;
+              }
+              console.log(`stdout: ${stdout}`);
+            }
+          );
+        }
       } else {
-        // EXECUTE FILE: TODO:
-        console.log('User is allowed to exe files ');
+        console.log(
+          `User ${user.username} does not have permissions to execute files `
+        );
       }
       break;
+    }
+    case 'ls': {
+      if (execute == true) {
+        console.log(`User ${user.username} has permissions to list all files `);
+
+        exec('ls -la', (error, stdout, stderr) => {
+          if (error) {
+            console.log(`error: ${error.messagee}`);
+            return;
+          }
+          if (stderr) {
+            console.log(`stderr: ${stderr}`);
+            return;
+          }
+          console.log(`stdout: ${stdout}`);
+        });
+      }
     }
 
     default: {
       console.log('Wrong command ');
     }
   }
-
-
 
   let msgResponse = 'Request sent successfully ';
 
@@ -114,5 +184,4 @@ server.on('message', function (message, remote) {
     }
   );
 });
-
 server.bind(PORT, HOST);
