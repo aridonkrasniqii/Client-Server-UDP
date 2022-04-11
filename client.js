@@ -8,7 +8,9 @@ const readline = require('readline').createInterface({
 readline.question('Execute command: ', (cmd) => {
 
     const user = {
+      //change user here(it should be one of the users registerd).
         username: 'user',
+      //change password here.
         password: 'password',
         permissions: {
           read: true,

@@ -7,13 +7,23 @@ const db_users = [
   {
     username: 'aridon',
     password: 'aridonaridon',
-    permissions: { read: true, write: true, execute: false },
+    permissions: { read: true, write: true, execute: true },
   },
 
   {
     username: 'arif',
     password: 'arifarif',
-    permissions: { read: true, write: true, execute: false },
+    permissions: { read: true, write: false, execute: false },
+  },
+  {
+    username: 'art',
+    password: 'artart',
+    permissions: { read: true, write: false, execute: false },
+  },
+  {
+    username: 'arjana',
+    password: 'arjanaarjana',
+    permissions: { read: true, write: false, execute: false },
   },
 ];
 
@@ -74,7 +84,7 @@ server.on('message', function (message, remote) {
         });
       } else {
         console.log(
-          `User ${user.username}does not have permissions to read file `
+          `User ${user.username} does not have permissions to read file `
         );
       }
 
@@ -94,7 +104,7 @@ server.on('message', function (message, remote) {
         });
       } else {
         console.log(
-          `User ${user.username}does not have permissions to write on file `
+          `User ${user.username} does not have permissions to write on file `
         );
       }
       break;
