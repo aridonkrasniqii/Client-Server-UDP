@@ -2,6 +2,8 @@ const fs = require('fs');
 const { exec } = require('child_process');
 var dgram = require('dgram');
 
+
+
 // users details
 const db_users = [
   {
@@ -13,7 +15,7 @@ const db_users = [
   {
     username: 'arif',
     password: 'arifarif',
-    permissions: { read: true, write: false, execute: false },
+    permissions: { read: true, write: false, execute: true },
   },
   {
     username: 'art',
@@ -38,12 +40,13 @@ function findUser(user, password) {
 }
 
 let PORT = 8882;
-let HOST = '127.0.0.1';
+let HOST = '172.16.0.137';
 
 // Create udp server socket object.
 let server = dgram.createSocket('udp4');
 
 // When udp server started and listening.
+
 server.on('listening', function () {
   // Get and print udp server listening ip address and port number in log console.
   let address = server.address();
@@ -61,13 +64,31 @@ server.on('message', function (message, remote) {
   let userd = msg.split(' ');
 
   const [request, usr, pwd] = userd;
-
   const user = findUser(usr, pwd);
 
+  if(user == null) {
+    let msgResponse = 'Request was not sent successfully ';
+  // server respond
+    server.send(
+      msgResponse,
+      0,
+      msgResponse.length,
+      remote.port,
+      remote.address,
+      function (err, bytes) {
+        if (err) throw err;
+        console.log(
+          'UDP server message send to ' + remote.address + ':' + remote.port
+        );
+      }
+    );
+  return;
+  }
   const { read, write, execute } = user.permissions;
 
   console.log('Users info: ');
   console.log(user);
+
 
   switch (request.slice(0, request.length - 1)) {
     case 'read': {
@@ -95,7 +116,7 @@ server.on('message', function (message, remote) {
         console.log(`User ${user.username} is allowed to write on file `);
 
         const content = userd;
-        fs.writeFile('text.txt', content, (err) => {
+        fs.appendFile('text.txt', content, (err) => {
           if (err) {
             console.log('Write file exception ' + err);
           } else {
@@ -157,6 +178,38 @@ server.on('message', function (message, remote) {
     }
     case 'ls': {
       if (execute == true) {
+        if(user.permissions.write){
+             exec(
+            'chmod u=rwx,g=r,o= text.txt',
+            (error, stdout, stderr) => {
+              if (error) {
+                console.log(`error: ${error.message}`);
+                return;
+              }
+              if (stderr) {
+                console.log(`stderr: ${stderr}`);
+                return;
+              }
+              console.log(`stdout: ${stdout}`);
+            }
+          );
+        }else {
+             exec(
+            'chmod 0444 text.txt',
+            (error, stdout, stderr) => {
+              if (error) {
+                console.log(`error: ${error.message}`);
+                return;
+              }
+              if (stderr) {
+                console.log(`stderr: ${stderr}`);
+                return;
+              }
+              console.log(`stdout: ${stdout}`);
+            }
+          );
+        }
+
         console.log(`User ${user.username} has permissions to list all files `);
 
         exec('ls -la', (error, stdout, stderr) => {
@@ -178,12 +231,12 @@ server.on('message', function (message, remote) {
     }
   }
 
-  let msgResponse = 'Request sent successfully ';
-
+  let messageResponse = 'Request sent successfully ';
+  // server respond
   server.send(
-    msgResponse,
+    messageResponse,
     0,
-    msgResponse.length,
+    messageResponse.length,
     remote.port,
     remote.address,
     function (err, bytes) {
